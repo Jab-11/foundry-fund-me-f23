@@ -5,7 +5,7 @@ import {PriceConverter} from "../src/PriceConverter.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 //original gas - 8,03,045
 //use of constant - 7,83,087
-error NotOwner();
+error FundMe_NotOwner();
 
 contract FundMe{
     using PriceConverter for uint256;
@@ -54,7 +54,7 @@ contract FundMe{
     modifier OnlyOwner{
         // require(msg.sender == i_owner,"Only Owner can access this function.");
         // for more gas efficient
-        if(msg.sender!=i_owner){revert NotOwner();}
+        if(msg.sender!=i_owner){revert FundMe_NotOwner();}
         _;
         // Underscore is a special character only used inside
         // a function modifier and it tells Solidity to
