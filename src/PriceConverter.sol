@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8;
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+//Libraries in solidity are similar to contracts that contain reusable codes.
+//The library does not have state variables, it cannot inherit any element and cannot be inherited.
 
 library PriceConverter{
     //function to getprice of ETH in USD

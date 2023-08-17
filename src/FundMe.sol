@@ -2,7 +2,7 @@
 pragma solidity 0.8;
 
 import {PriceConverter} from "../src/PriceConverter.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 //original gas - 8,03,045
 //use of constant - 7,83,087
 error FundMe_NotOwner();
@@ -47,7 +47,7 @@ contract FundMe{
 
         require(msg.value.getConversionRate() >= MINIMUM_USD, "The minimum amount is 10$"); //1e18 = 10^18 wei = 1eth
         funds.push(msg.sender);
-        AddresstoFund[msg.sender] = msg.value;
+        AddresstoFund[msg.sender] += msg.value;
     }
 
     //modifier to only accesible by owner
@@ -73,16 +73,19 @@ contract FundMe{
         //How to send Ether?
         //You can send Ether to other contracts by
 
+        // (1)
         // transfer (2300 gas, throws error)
         // payable(msg.sender).transfer(address(this).balance);
         // This function is no longer recommended for sending Ether.
 
+        // (2)
         // send (2300 gas, returns bool)
         // bool SendSuccess = payable(msg.sender).send(address(this).balance);
         // require(SendSuccess,"Send Failed");
         // Send returns a boolean value indicating success or failure.
         // This function is not recommended for sending Ether.
 
+        // (3)
         // call (forward all gas or set gas, returns bool)
         (bool CallSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(CallSuccess,"Call Failed");
@@ -114,6 +117,10 @@ contract FundMe{
     //  /        \
     //receive()  fallback()
 
+    function getVersion() public view returns(uint256) {
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+        return  priceFeed.version();
+    }
     fallback() external payable {
         fund();
     }
