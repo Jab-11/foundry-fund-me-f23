@@ -22,6 +22,7 @@ contract FundMe{
 
     //to make withdraw only accisble by owner(deployer)
     address public immutable i_owner;
+    AggregatorV3Interface private s_priceFeed;
     //Variables declared as immutable are a bit less restricted than 
     //those declared as constant: 
     //Immutable variables can be assigned an arbitrary value 
@@ -30,8 +31,10 @@ contract FundMe{
     // execution cost
         //immutable - 466
         //original - 2602
-    constructor(){
+    constructor(address priceFeed){
         i_owner = msg.sender;
+        s_priceFeed = AggregatorV3Interface(priceFeed);
+
     }
 
 
@@ -45,7 +48,7 @@ contract FundMe{
         //require - checkes condition
         //e condition specified in require evaluates to false, the contract execution will revert and any changes made prior to the require statement will be rolled back.
 
-        require(msg.value.getConversionRate() >= MINIMUM_USD, "The minimum amount is 10$"); //1e18 = 10^18 wei = 1eth
+        require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "The minimum amount is 10$"); //1e18 = 10^18 wei = 1eth
         funds.push(msg.sender);
         AddresstoFund[msg.sender] += msg.value;
     }
@@ -118,8 +121,7 @@ contract FundMe{
     //receive()  fallback()
 
     function getVersion() public view returns(uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-        return  priceFeed.version();
+        return  s_priceFeed.version();
     }
     fallback() external payable {
         fund();
