@@ -15,7 +15,7 @@ contract MockV3Aggregator {
 
     constructor(uint8 _decimals, int256 _initialAnswer) {
         decimals = _decimals;
-        updateAnswer(_initialAnswer);
+        updateAnswer(_initialAnswer);  
     }
 
     function updateAnswer(int256 _answer) public {

@@ -17,11 +17,11 @@ contract FundMe{
         //original - 2451
     //For constant variables, the value has to be a constant at compile time 
     //and it has to be assigned where the variable is declared. 
-    address[] public funds;
-    mapping(address=>uint256) public AddresstoFund;
+    address[] private s_funds;
+    mapping(address=>uint256) private s_AddresstoFund;
 
     //to make withdraw only accisble by owner(deployer)
-    address public immutable i_owner;
+    address private immutable i_owner;
     AggregatorV3Interface private s_priceFeed;
     //Variables declared as immutable are a bit less restricted than 
     //those declared as constant: 
@@ -34,7 +34,6 @@ contract FundMe{
     constructor(address priceFeed){
         i_owner = msg.sender;
         s_priceFeed = AggregatorV3Interface(priceFeed);
-
     }
 
 
@@ -49,8 +48,8 @@ contract FundMe{
         //e condition specified in require evaluates to false, the contract execution will revert and any changes made prior to the require statement will be rolled back.
 
         require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "The minimum amount is 10$"); //1e18 = 10^18 wei = 1eth
-        funds.push(msg.sender);
-        AddresstoFund[msg.sender] += msg.value;
+        s_funds.push(msg.sender);
+        s_AddresstoFund[msg.sender] += msg.value;
     }
 
     //modifier to only accesible by owner
@@ -64,12 +63,12 @@ contract FundMe{
         // execute the rest of the code.
     }    
     function withdraw() public OnlyOwner{
-        for(uint fundIndex=0; fundIndex < funds.length; fundIndex++){
-            address funder = funds[fundIndex];
-            AddresstoFund[funder] = 0;
+        for(uint fundIndex=0; fundIndex < s_funds.length; fundIndex++){
+            address funder = s_funds[fundIndex];
+            s_AddresstoFund[funder] = 0;
         }
         //reset the array to null
-        funds = new address[](0);
+        s_funds = new address[](0);
 
         //actually withdraw funds
         
@@ -120,14 +119,33 @@ contract FundMe{
     //  /        \
     //receive()  fallback()
 
-    function getVersion() public view returns(uint256) {
-        return  s_priceFeed.version();
-    }
     fallback() external payable {
         fund();
     }
 
     receive() external payable {
         fund();
+    }
+
+
+    // Getters
+    function getAddressToAmountFunded(address fundingAddress) public view returns (uint256) {
+        return s_AddresstoFund[fundingAddress];
+    }
+
+    function getVersion() public view returns (uint256) {
+        return s_priceFeed.version();
+    }
+
+    function getFunder(uint256 index) public view returns (address) {
+        return s_funds[index];
+    }
+
+    function getOwner() public view returns (address) {
+        return i_owner;
+    }
+
+    function getPriceFeed() public view returns (AggregatorV3Interface) {
+        return s_priceFeed;
     }
 }
