@@ -11,6 +11,7 @@ contract FundMeTest is Test{
     address USER = makeAddr("Jabarson");
     uint256 constant SEND_VALUE = 0.1 ether; //10e17
     uint256 constant STARTING_BAL = 10 ether;
+    uint256 constant GAS_PRICE = 1;
 
     function setUp() external{
         //fundme = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
@@ -101,8 +102,30 @@ contract FundMeTest is Test{
         uint256 startingOwnerBalance = fundme.getOwner().balance;
         uint256 startingFundMeBalance = address(fundme).balance;
 
+        vm.txGasPrice(GAS_PRICE); // cheatcode to set gas price
         vm.prank(fundme.getOwner());
         fundme.withdraw();
+
+        
+        assertEq(address(fundme).balance,0);
+        assertEq(startingFundMeBalance + startingOwnerBalance, fundme.getOwner().balance);
+    }
+
+    function testCheaperWithDrawFromMultipleFunders() public funded{
+        uint160 numberOfFunders = 10;
+        uint160 startingFunderIndex = 1;
+
+        for(uint160 i = startingFunderIndex; i < numberOfFunders; i++){
+            hoax(address(i), SEND_VALUE);
+            fundme.fund{value: SEND_VALUE}();
+        }
+
+        uint256 startingOwnerBalance = fundme.getOwner().balance;
+        uint256 startingFundMeBalance = address(fundme).balance;
+
+        vm.txGasPrice(GAS_PRICE); // cheatcode to set gas price
+        vm.prank(fundme.getOwner());
+        fundme.cheaperWithdraw();
 
         
         assertEq(address(fundme).balance,0);

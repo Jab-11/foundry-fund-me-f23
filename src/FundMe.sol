@@ -61,7 +61,19 @@ contract FundMe{
         // Underscore is a special character only used inside
         // a function modifier and it tells Solidity to
         // execute the rest of the code.
-    }    
+    }
+
+    function cheaperWithdraw() public OnlyOwner{
+        uint256 fundsLength = s_funds.length;
+        for(uint fundIndex=0; fundIndex < fundsLength; fundIndex++){
+            address funder = s_funds[fundIndex];
+            s_AddresstoFund[funder] = 0;
+        }
+        s_funds = new address[](0);
+        (bool CallSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        require(CallSuccess,"Call Failed");
+    }
+
     function withdraw() public OnlyOwner{
         for(uint fundIndex=0; fundIndex < s_funds.length; fundIndex++){
             address funder = s_funds[fundIndex];
